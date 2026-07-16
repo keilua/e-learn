@@ -14,6 +14,49 @@ const retryOperation = async (operation, maxRetries = 3, delay = 1000) => {
 
 export const completionService = {
   /**
+   * Creates a course_enrollments row if the user doesn't have one yet.
+   * Content is reachable straight from the course curriculum without going
+   * through the "Enroll Now" button first, so without this a user's progress
+   * gets tracked in lesson_progress/quiz_attempts but never surfaces on the
+   * teacher's student list (which reads from course_enrollments).
+   */
+  async ensureEnrollment(userId, courseId) {
+    try {
+      const { data: existing } = await retryOperation(() =>
+        supabase
+          .from('course_enrollments')
+          .select('id')
+          .eq('user_id', userId)
+          .eq('course_id', courseId)
+          .maybeSingle()
+      );
+
+      if (existing) return existing.id;
+
+      const { data: created, error } = await retryOperation(() =>
+        supabase
+          .from('course_enrollments')
+          .insert({
+            id: crypto.randomUUID(),
+            course_id: courseId,
+            user_id: userId,
+            status: 'active',
+            enrollment_date: new Date().toISOString(),
+            progress_percentage: 0
+          })
+          .select('id')
+          .single()
+      );
+
+      if (error) throw error;
+      return created.id;
+    } catch (error) {
+      console.error('Error ensuring enrollment:', error);
+      return null;
+    }
+  },
+
+  /**
    * Marks a lesson as complete using upsert to prevent duplicate key errors.
    */
   async markLessonComplete(userId, lessonId) {
@@ -45,6 +88,8 @@ export const completionService = {
    */
   async checkAndProcessCompletion(userId, courseId) {
     try {
+      await this.ensureEnrollment(userId, courseId);
+
       // 1. Get all modules for the course
       const { data: modules, error: modulesError } = await retryOperation(() => 
         supabase
