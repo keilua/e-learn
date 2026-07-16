@@ -56,7 +56,7 @@ const MyCertificates = () => {
   return (
     <div className="container mx-auto py-8 px-4">
       <Helmet>
-        <title>My Certificates | EduPlatform</title>
+        <title>My Certificates | Crow Educ</title>
       </Helmet>
 
       <div className="flex items-center gap-4 mb-8">

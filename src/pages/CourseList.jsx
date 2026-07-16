@@ -38,7 +38,7 @@ const CourseList = () => {
           instructor:instructor_id (
             id,
             full_name,
-            email
+            avatar_url
           )
         `)
         .eq('is_published', true);
@@ -81,7 +81,7 @@ const CourseList = () => {
   return (
     <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8 min-h-screen">
       <Helmet>
-        <title>All Courses | EduPlatform</title>
+        <title>All Courses | Crow Educ</title>
         <meta name="description" content="Browse our wide selection of courses" />
       </Helmet>
 

@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from 'react';
+import DOMPurify from 'dompurify';
 import { FileText, Download, PlayCircle, Code, Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Document, Page, pdfjs } from 'react-pdf';
-import 'react-pdf/dist/esm/Page/AnnotationLayer.css';
-import 'react-pdf/dist/esm/Page/TextLayer.css';
+import 'react-pdf/dist/Page/AnnotationLayer.css';
+import 'react-pdf/dist/Page/TextLayer.css';
 
-// Initialize PDF worker
-// Using unpkg as a reliable CDN for the worker file matching the installed version
-try {
-  pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
-} catch (e) {
-  console.error('Failed to set PDF worker source:', e);
-}
+// Served locally via Vite's asset pipeline instead of a CDN, so PDF rendering
+// doesn't depend on a third party being reachable/trustworthy at runtime.
+pdfjs.GlobalWorkerOptions.workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.min.mjs',
+  import.meta.url
+).toString();
 
 const LessonViewer = ({ lesson }) => {
   const [numPages, setNumPages] = useState(null);
@@ -108,9 +108,10 @@ const LessonViewer = ({ lesson }) => {
 
   // Text Renderer
   if (lesson.type === 'text' || (!lesson.type && lesson.content)) {
+    const safeContent = DOMPurify.sanitize(lesson.content || '');
     return (
       <div className="p-6 md:p-10 prose prose-slate dark:prose-invert max-w-none bg-card rounded-lg border shadow-sm">
-        <div dangerouslySetInnerHTML={{ __html: lesson.content }} />
+        <div dangerouslySetInnerHTML={{ __html: safeContent }} />
       </div>
     );
   }

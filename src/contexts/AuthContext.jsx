@@ -210,11 +210,11 @@ export const AuthProvider = ({ children }) => {
       setLoading(true);
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
-      
+
       setUser(null);
       setProfile(null);
       setSession(null);
-      
+
       toast({
         title: "Signed out",
         description: "See you next time!",
@@ -230,6 +230,58 @@ export const AuthProvider = ({ children }) => {
     }
   }, [toast]);
 
+  const requestPasswordReset = useCallback(async (email) => {
+    try {
+      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+        redirectTo: `${window.location.origin}/reset-password`,
+      });
+
+      if (error) throw error;
+
+      return { error: null };
+    } catch (error) {
+      console.error('Reset password error:', error);
+      return { error };
+    }
+  }, []);
+
+  const updatePassword = useCallback(async (newPassword) => {
+    try {
+      const { error } = await supabase.auth.updateUser({ password: newPassword });
+      if (error) throw error;
+      return { error: null };
+    } catch (error) {
+      console.error('Update password error:', error);
+      return { error };
+    }
+  }, []);
+
+  // RGPD: lets the signed-in user permanently delete their own account.
+  // Backed by the `delete_own_account` SQL function, which is SECURITY
+  // DEFINER but scoped to `auth.uid()` so it can only ever remove the
+  // caller's own row.
+  const deleteAccount = useCallback(async () => {
+    try {
+      const { error } = await supabase.rpc('delete_own_account');
+      if (error) throw error;
+
+      await supabase.auth.signOut();
+      setUser(null);
+      setProfile(null);
+      setSession(null);
+
+      return { error: null };
+    } catch (error) {
+      console.error('Delete account error:', error);
+      toast({
+        variant: "destructive",
+        title: "Could not delete account",
+        description: error.message,
+      });
+      return { error };
+    }
+  }, [toast]);
+
   const value = useMemo(() => ({
     user,
     profile,
@@ -240,8 +292,11 @@ export const AuthProvider = ({ children }) => {
     register,
     logout,
     refreshProfile,
+    requestPasswordReset,
+    updatePassword,
+    deleteAccount,
     isAuthenticated: !!user,
-  }), [user, profile, session, loading, login, register, logout, refreshProfile]);
+  }), [user, profile, session, loading, login, register, logout, refreshProfile, requestPasswordReset, updatePassword, deleteAccount]);
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

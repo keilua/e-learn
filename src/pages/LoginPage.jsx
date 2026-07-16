@@ -7,7 +7,7 @@ const LoginPage = () => {
   return (
     <div className="container relative flex-col items-center justify-center grid lg:max-w-none lg:grid-cols-2 lg:px-0 min-h-[calc(100vh-4rem)]">
       <Helmet>
-        <title>Login | EduPlatform</title>
+        <title>Login | Crow Educ</title>
         <meta name="description" content="Login to your account" />
       </Helmet>
 
@@ -26,7 +26,7 @@ const LoginPage = () => {
           >
             <path d="M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3" />
           </svg>
-          EduPlatform
+          Crow Educ
         </div>
         <div className="relative z-20 mt-auto">
           <blockquote className="space-y-2">

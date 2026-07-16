@@ -45,11 +45,11 @@ export const searchService = {
 
       // 2. Search Teachers/Users
       if (!type || type === 'user') {
-        const { data: users } = await retryOperation(() => 
+        const { data: users } = await retryOperation(() =>
           supabase
             .from('users')
-            .select('*')
-            .or(`full_name.ilike.%${query}%,email.ilike.%${query}%`)
+            .select('id, full_name, avatar_url, role, bio')
+            .ilike('full_name', `%${query}%`)
             .limit(10)
         );
         results.teachers = users || [];

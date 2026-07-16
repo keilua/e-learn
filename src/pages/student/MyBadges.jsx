@@ -48,7 +48,7 @@ const MyBadges = () => {
   return (
     <div className="container mx-auto py-8 px-4">
       <Helmet>
-        <title>My Badges | EduPlatform</title>
+        <title>My Badges | Crow Educ</title>
       </Helmet>
 
       <div className="flex items-center gap-4 mb-8">

@@ -1,9 +1,11 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from '@/contexts/AuthContext';
+import { ThemeProvider } from '@/contexts/ThemeContext';
 import { useAuth } from '@/hooks/useAuth';
 import { Toaster } from '@/components/ui/toaster';
 import ProtectedRoute from '@/components/auth/ProtectedRoute';
+import RequireRole from '@/components/auth/RequireRole';
 import Navbar from '@/components/Navbar';
 import { Loader2 } from 'lucide-react';
 
@@ -11,6 +13,8 @@ import { Loader2 } from 'lucide-react';
 import LandingPage from '@/pages/LandingPage';
 import LoginPage from '@/pages/LoginPage';
 import RegisterPage from '@/pages/RegisterPage';
+import ForgotPasswordPage from '@/pages/ForgotPasswordPage';
+import ResetPasswordPage from '@/pages/ResetPasswordPage';
 import StudentDashboard from '@/pages/StudentDashboard';
 import CourseList from '@/pages/CourseList';
 import CourseDetail from '@/pages/CourseDetail';
@@ -59,6 +63,8 @@ import StudentDonationHistory from '@/pages/student/StudentDonationHistory';
 import EditProfile from '@/pages/student/EditProfile';
 
 // Admin Pages
+import AdminDashboard from '@/pages/admin/AdminDashboard';
+import AdminUserManagement from '@/pages/admin/AdminUserManagement';
 import AdminDonationHistory from '@/pages/admin/AdminDonationHistory';
 
 // Notification Pages
@@ -84,7 +90,7 @@ const DashboardRedirect = () => {
     case 'professor': // Added professor
       return <Navigate to="/dashboard/teacher" replace />;
     case 'admin':
-      return <Navigate to="/admin/donations" replace />;
+      return <Navigate to="/admin" replace />;
     case 'student':
     default:
       return <Navigate to="/dashboard/student" replace />;
@@ -93,6 +99,7 @@ const DashboardRedirect = () => {
 
 function App() {
   return (
+    <ThemeProvider>
     <AuthProvider>
       <Router>
         <div className="min-h-screen bg-background font-sans antialiased">
@@ -101,6 +108,8 @@ function App() {
             <Route path="/" element={<LandingPage />} />
             <Route path="/login" element={<LoginPage />} />
             <Route path="/register" element={<RegisterPage />} />
+            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+            <Route path="/reset-password" element={<ResetPasswordPage />} />
             
             {/* Public Course Routes */}
             <Route path="/courses" element={<CourseList />} />
@@ -117,13 +126,12 @@ function App() {
               {/* Search History */}
               <Route path="/search/history" element={<SearchHistory />} />
               
-              {/* Student Routes */}
               <Route path="/dashboard/student" element={<StudentDashboard />} />
               <Route path="/dashboard/student/profile" element={<EditProfile />} />
               <Route path="/dashboard/student/badges" element={<MyBadges />} />
               <Route path="/dashboard/student/certificates" element={<MyCertificates />} />
               <Route path="/dashboard/student/donations" element={<StudentDonationHistory />} />
-              
+
               {/* Learning Routes */}
               <Route path="/courses/:courseId/modules/:moduleId" element={<ModuleDetail />} />
               <Route path="/courses/:courseId/modules/:moduleId/lessons/:lessonId" element={<LessonPage />} />
@@ -134,34 +142,35 @@ function App() {
               <Route path="/forum/create" element={<CreateDiscussion />} />
               <Route path="/forum/discussion/:discussionId" element={<DiscussionDetail />} />
 
-              {/* Teacher Routes - Dashboard & Courses */}
-              <Route path="/dashboard/teacher" element={<TeacherDashboard />} />
-              <Route path="/teacher-dashboard" element={<TeacherDashboard />} /> {/* New Alias for Teacher Dashboard */}
-              <Route path="/dashboard/teacher/donations" element={<DonationHistory />} />
-              <Route path="/dashboard/teacher/courses/:courseId" element={<CourseOverview />} />
-              <Route path="/dashboard/teacher/courses/:courseId/students" element={<StudentList />} />
-              <Route path="/dashboard/teacher/courses/:courseId/students/:studentId" element={<StudentDetail />} />
-              <Route path="/dashboard/teacher/courses/:courseId/analytics" element={<CourseAnalytics />} />
-              <Route path="/dashboard/teacher/courses/:courseId/settings" element={<CourseSettings />} />
+              <Route element={<RequireRole roles={['instructor', 'teacher', 'professor']} />}>
+                <Route path="/dashboard/teacher" element={<TeacherDashboard />} />
+                <Route path="/teacher-dashboard" element={<TeacherDashboard />} />
+                <Route path="/dashboard/teacher/donations" element={<DonationHistory />} />
+                <Route path="/dashboard/teacher/courses/:courseId" element={<CourseOverview />} />
+                <Route path="/dashboard/teacher/courses/:courseId/students" element={<StudentList />} />
+                <Route path="/dashboard/teacher/courses/:courseId/students/:studentId" element={<StudentDetail />} />
+                <Route path="/dashboard/teacher/courses/:courseId/analytics" element={<CourseAnalytics />} />
+                <Route path="/dashboard/teacher/courses/:courseId/settings" element={<CourseSettings />} />
 
-              {/* Teacher Routes - Content Management */}
-              <Route path="/courses/create" element={<CreateCourse />} />
-              <Route path="/courses/:courseId/edit" element={<EditCourse />} />
-              <Route path="/courses/:courseId/modules/create" element={<CreateModule />} />
-              <Route path="/dashboard/teacher/modules/:moduleId/edit" element={<EditModule />} />
-              <Route path="/dashboard/teacher/modules/:moduleId/lessons/create" element={<CreateLesson />} />
-              <Route path="/dashboard/teacher/modules/:moduleId/lessons/:lessonId/edit" element={<EditLesson />} />
+                <Route path="/courses/create" element={<CreateCourse />} />
+                <Route path="/courses/:courseId/edit" element={<EditCourse />} />
+                <Route path="/courses/:courseId/modules/create" element={<CreateModule />} />
+                <Route path="/dashboard/teacher/modules/:moduleId/edit" element={<EditModule />} />
+                <Route path="/dashboard/teacher/modules/:moduleId/lessons/create" element={<CreateLesson />} />
+                <Route path="/dashboard/teacher/modules/:moduleId/lessons/:lessonId/edit" element={<EditLesson />} />
 
-              {/* Teacher Routes - Quizzes */}
-              <Route path="/dashboard/teacher/modules/:moduleId/quizzes/create" element={<CreateQuiz />} />
-              <Route path="/dashboard/teacher/quizzes/:quizId/edit" element={<EditQuiz />} />
-              <Route path="/dashboard/teacher/quizzes/:quizId/stats" element={<TeacherQuizStats />} />
-              
-              {/* Teacher Routes - Badges */}
-              <Route path="/dashboard/teacher/quizzes/:quizId/create-badge" element={<CreateBadge />} />
+                <Route path="/dashboard/teacher/modules/:moduleId/quizzes/create" element={<CreateQuiz />} />
+                <Route path="/dashboard/teacher/quizzes/:quizId/edit" element={<EditQuiz />} />
+                <Route path="/dashboard/teacher/quizzes/:quizId/stats" element={<TeacherQuizStats />} />
 
-              {/* Admin Routes */}
-              <Route path="/admin/donations" element={<AdminDonationHistory />} />
+                <Route path="/dashboard/teacher/quizzes/:quizId/create-badge" element={<CreateBadge />} />
+              </Route>
+
+              <Route element={<RequireRole roles={['admin']} />}>
+                <Route path="/admin" element={<AdminDashboard />} />
+                <Route path="/admin/users" element={<AdminUserManagement />} />
+                <Route path="/admin/donations" element={<AdminDonationHistory />} />
+              </Route>
               
               {/* Notification Routes */}
               <Route path="/notifications" element={<NotificationHistory />} />
@@ -173,6 +182,7 @@ function App() {
         </div>
       </Router>
     </AuthProvider>
+    </ThemeProvider>
   );
 }
 

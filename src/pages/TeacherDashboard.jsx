@@ -77,7 +77,7 @@ const TeacherDashboard = () => {
   return (
     <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
       <Helmet>
-        <title>Teacher Dashboard | EduPlatform</title>
+        <title>Teacher Dashboard | Crow Educ</title>
       </Helmet>
 
       <div className="flex justify-between items-center mb-8">

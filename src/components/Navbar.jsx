@@ -1,6 +1,8 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
+import { useTheme } from '@/hooks/useTheme';
+import Logo from '@/components/Logo';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import NotificationCenter from '@/components/notifications/NotificationCenter';
@@ -13,7 +15,25 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Menu, X, BookOpen, User, LogOut, Settings, History, Edit, LayoutDashboard } from 'lucide-react';
+import { Menu, X, User, LogOut, Settings, History, Edit, LayoutDashboard, ShieldCheck, Sun, Moon } from 'lucide-react';
+
+const ThemeToggle = ({ className = '' }) => {
+  const { theme, toggleTheme } = useTheme();
+  const isDark = theme === 'dark';
+
+  return (
+    <Button
+      variant="ghost"
+      size="icon"
+      onClick={toggleTheme}
+      aria-label={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+      title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+      className={className}
+    >
+      {isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+    </Button>
+  );
+};
 
 const Navbar = () => {
   const { user, profile, logout, role } = useAuth();
@@ -36,14 +56,15 @@ const Navbar = () => {
   
   // Helper to check for teacher/instructor roles
   const isTeacher = ['instructor', 'teacher', 'professor'].includes(role);
+  const isAdmin = role === 'admin';
 
   return (
     <nav className="border-b bg-background sticky top-0 z-50">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between gap-4">
         {/* Logo */}
         <Link to="/" className="flex items-center gap-2 font-bold text-xl text-primary shrink-0">
-          <BookOpen className="h-6 w-6" />
-          <span className="hidden sm:inline">EduPlatform</span>
+          <Logo size={32} />
+          <span className="hidden sm:inline">Crow Educ</span>
         </Link>
 
         {/* Search Bar - Center */}
@@ -64,15 +85,26 @@ const Navbar = () => {
                
                {/* Teacher Dashboard Link */}
                {isTeacher && (
-                  <Link 
-                    to="/teacher-dashboard" 
+                  <Link
+                    to="/teacher-dashboard"
                     className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1"
                   >
                      <LayoutDashboard className="h-4 w-4" />
                      Teacher Dashboard
                   </Link>
                )}
-               
+
+               {/* Admin Dashboard Link */}
+               {isAdmin && (
+                  <Link
+                    to="/admin"
+                    className="text-sm font-medium hover:text-primary transition-colors flex items-center gap-1"
+                  >
+                     <ShieldCheck className="h-4 w-4" />
+                     Admin
+                  </Link>
+               )}
+
                {/* Student Dashboard Link (only if not teacher, or for everyone?) 
                    Usually teachers also want to see student view, but based on prompt, let's keep it simple.
                    Existing code hid it for instructors. I'll keep that logic but allow accessing via menu.
@@ -88,6 +120,7 @@ const Navbar = () => {
 
         {/* Right Side Actions */}
         <div className="hidden md:flex items-center gap-3 shrink-0">
+          <ThemeToggle />
           {user ? (
             <>
               <NotificationCenter />
@@ -118,6 +151,11 @@ const Navbar = () => {
                       <LayoutDashboard className="mr-2 h-4 w-4" /> Teacher Dashboard
                     </DropdownMenuItem>
                   )}
+                  {isAdmin && (
+                    <DropdownMenuItem onClick={() => navigate('/admin')}>
+                      <ShieldCheck className="mr-2 h-4 w-4" /> Admin Dashboard
+                    </DropdownMenuItem>
+                  )}
                   <DropdownMenuItem onClick={() => navigate('/dashboard/student/profile')}>
                     <Edit className="mr-2 h-4 w-4" /> Edit Profile
                   </DropdownMenuItem>
@@ -146,10 +184,13 @@ const Navbar = () => {
           )}
         </div>
 
-        {/* Mobile Menu Button */}
-        <button className="md:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-          {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-        </button>
+        {/* Mobile Actions */}
+        <div className="flex items-center gap-1 md:hidden">
+          <ThemeToggle />
+          <button onClick={() => setIsMenuOpen(!isMenuOpen)}>
+            {isMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
+        </div>
       </div>
 
       {/* Mobile Menu */}
@@ -167,6 +208,11 @@ const Navbar = () => {
               {isTeacher && (
                 <Link to="/teacher-dashboard" className="block text-sm font-medium text-primary" onClick={() => setIsMenuOpen(false)}>
                   Teacher Dashboard
+                </Link>
+              )}
+              {isAdmin && (
+                <Link to="/admin" className="block text-sm font-medium text-primary" onClick={() => setIsMenuOpen(false)}>
+                  Admin Dashboard
                 </Link>
               )}
               <Link to="/dashboard/student" className="block text-sm font-medium" onClick={() => setIsMenuOpen(false)}>

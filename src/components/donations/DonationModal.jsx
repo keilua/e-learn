@@ -120,7 +120,7 @@ const DonationModal = ({ isOpen, onClose, recipientId, recipientName, type = 'te
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Heart className="h-5 w-5 text-red-500 fill-current" />
-            Donate to {type === 'platform' ? 'EduPlatform' : recipientName || 'Teacher'}
+            Donate to {type === 'platform' ? 'Crow Educ' : recipientName || 'Teacher'}
           </DialogTitle>
           <DialogDescription>
             Support {type === 'platform' ? 'the development of this platform' : 'this instructor'} directly.
