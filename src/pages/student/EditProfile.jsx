@@ -8,11 +8,22 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/components/ui/use-toast';
-import { Loader2, Upload, User, Save, ArrowLeft } from 'lucide-react';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import { Loader2, Upload, User, Save, ArrowLeft, Trash2 } from 'lucide-react';
 import { Helmet } from 'react-helmet';
 
 const EditProfile = () => {
-  const { user, profile, refreshProfile } = useAuth();
+  const { user, profile, refreshProfile, deleteAccount } = useAuth();
   const navigate = useNavigate();
   const { toast } = useToast();
 
@@ -23,6 +34,7 @@ const EditProfile = () => {
   const [saving, setSaving] = useState(false);
   const [avatarFile, setAvatarFile] = useState(null);
   const [avatarPreview, setAvatarPreview] = useState(null);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (profile) {
@@ -137,6 +149,20 @@ const EditProfile = () => {
     }
   };
 
+  const handleDeleteAccount = async () => {
+    setDeleting(true);
+    const { error } = await deleteAccount();
+    setDeleting(false);
+
+    if (!error) {
+      toast({
+        title: "Account deleted",
+        description: "Your account and all your data have been permanently removed.",
+      });
+      navigate('/');
+    }
+  };
+
   const getInitials = (name) => {
     return name
       ? name.split(' ').map((n) => n[0]).join('').toUpperCase()
@@ -148,7 +174,7 @@ const EditProfile = () => {
   return (
     <div className="container max-w-2xl mx-auto py-10 px-4">
       <Helmet>
-        <title>Edit Profile | EduPlatform</title>
+        <title>Edit Profile | Crow Educ</title>
       </Helmet>
       
       <Button 
@@ -259,6 +285,51 @@ const EditProfile = () => {
             </Button>
           </CardFooter>
         </form>
+      </Card>
+
+      <Card className="w-full mt-6 border-destructive/50">
+        <CardHeader>
+          <CardTitle className="text-destructive">Danger Zone</CardTitle>
+          <CardDescription>
+            Permanently delete your account and all associated data (courses, progress, badges, certificates). This action cannot be undone.
+          </CardDescription>
+        </CardHeader>
+        <CardFooter>
+          <AlertDialog>
+            <AlertDialogTrigger asChild>
+              <Button variant="destructive" disabled={deleting}>
+                {deleting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Deleting...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="mr-2 h-4 w-4" />
+                    Delete my account
+                  </>
+                )}
+              </Button>
+            </AlertDialogTrigger>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  This will permanently delete your account and remove all your data from our servers. This action cannot be undone.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                <AlertDialogAction
+                  onClick={handleDeleteAccount}
+                  className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                >
+                  Yes, delete my account
+                </AlertDialogAction>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
+        </CardFooter>
       </Card>
     </div>
   );

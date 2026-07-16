@@ -108,7 +108,7 @@ const CertificatePreview = ({ certificate, studentName, courseName, issuedDate }
 
               <div className="text-center">
                 <div className="text-lg font-script font-bold text-slate-700 italic">
-                  Hostinger Horizons
+                  Crow Educ
                 </div>
                 <div className="w-40 border-t border-slate-400 mt-2"></div>
                 <div className="text-xs text-slate-500 mt-1 uppercase tracking-wider">Instructor Signature</div>

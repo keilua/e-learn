@@ -89,7 +89,7 @@ const CreateCourse = () => {
   return (
     <div className="container mx-auto py-10 px-4 max-w-2xl">
       <Helmet>
-        <title>Create Course | EduPlatform</title>
+        <title>Create Course | Crow Educ</title>
       </Helmet>
       
       <div className="mb-8">

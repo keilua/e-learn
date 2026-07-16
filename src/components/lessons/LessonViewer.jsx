@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import DOMPurify from 'dompurify';
 import { FileText, Download, PlayCircle, Code, Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Document, Page, pdfjs } from 'react-pdf';
@@ -108,9 +109,10 @@ const LessonViewer = ({ lesson }) => {
 
   // Text Renderer
   if (lesson.type === 'text' || (!lesson.type && lesson.content)) {
+    const safeContent = DOMPurify.sanitize(lesson.content || '');
     return (
       <div className="p-6 md:p-10 prose prose-slate dark:prose-invert max-w-none bg-card rounded-lg border shadow-sm">
-        <div dangerouslySetInnerHTML={{ __html: lesson.content }} />
+        <div dangerouslySetInnerHTML={{ __html: safeContent }} />
       </div>
     );
   }

@@ -5,6 +5,7 @@ import { uploadPDF, uploadVideo } from '@/services/FileUploadService';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
+import RichTextEditor from '@/components/lessons/RichTextEditor';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import { Loader2, ArrowLeft, FileText, Video, Code, File, Upload, X, CheckCircle } from 'lucide-react';
@@ -186,13 +187,11 @@ const CreateLesson = () => {
             {contentType === 'text' && (
               <div className="space-y-2">
                 <Label>Content</Label>
-                <Textarea 
-                  rows={10}
-                  value={formData.content} 
-                  onChange={e => setFormData({...formData, content: e.target.value})} 
-                  placeholder="Write your lesson content here using Markdown..."
+                <RichTextEditor
+                  value={formData.content}
+                  onChange={content => setFormData({ ...formData, content })}
+                  placeholder="Write your lesson content here..."
                 />
-                <p className="text-xs text-muted-foreground">Markdown is supported.</p>
               </div>
             )}
 

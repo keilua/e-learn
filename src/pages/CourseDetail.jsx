@@ -97,7 +97,7 @@ const CourseDetail = () => {
   return (
     <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8 min-h-screen">
       <Helmet>
-        <title>{course.title} | EduPlatform</title>
+        <title>{course.title} | Crow Educ</title>
         <meta name="description" content={course.description || `Details for course ${course.title}`} />
       </Helmet>
 

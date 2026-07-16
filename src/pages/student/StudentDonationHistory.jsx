@@ -83,7 +83,7 @@ const StudentDonationHistory = () => {
                 {donations.map((donation) => (
                   <TableRow key={donation.id}>
                     <TableCell className="font-medium">
-                      {donation.type === 'platform' ? 'EduPlatform' : donation.recipient?.full_name || 'Unknown Teacher'}
+                      {donation.type === 'platform' ? 'Crow Educ' : donation.recipient?.full_name || 'Unknown Teacher'}
                     </TableCell>
                     <TableCell className="font-bold">
                       €{Number(donation.amount).toFixed(2)}

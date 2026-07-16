@@ -20,7 +20,7 @@ const DashboardPage = () => {
   return (
     <div className="container mx-auto py-10 px-4 sm:px-6 lg:px-8">
       <Helmet>
-        <title>Dashboard | EduPlatform</title>
+        <title>Dashboard | Crow Educ</title>
         <meta name="description" content="Your personal learning dashboard" />
       </Helmet>
       

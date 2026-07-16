@@ -73,7 +73,7 @@ const StudentDashboard = () => {
   return (
     <div className="container mx-auto py-8 px-4 sm:px-6 lg:px-8">
       <Helmet>
-        <title>My Learning | EduPlatform</title>
+        <title>My Learning | Crow Educ</title>
       </Helmet>
 
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
