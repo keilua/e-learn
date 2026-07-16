@@ -6,6 +6,7 @@ import QuizTaker from '@/components/quizzes/QuizTaker';
 import QuizResults from '@/components/quizzes/QuizResults';
 import { Loader2 } from 'lucide-react';
 import { useToast } from '@/components/ui/use-toast';
+import { completionService } from '@/services/completionService';
 
 const QuizPage = () => {
     const { courseId, moduleId, quizId } = useParams();
@@ -170,6 +171,8 @@ const QuizPage = () => {
     const handleQuizSubmit = async (userAnswers) => {
         setLoading(true);
         try {
+            await completionService.ensureEnrollment(user.id, courseId);
+
             // Grading logic
             const { data: fullQuestions } = await supabase
                 .from('questions')
