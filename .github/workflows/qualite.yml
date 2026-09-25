@@ -35,6 +35,8 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
+      - name: Audit des dépendances (high et critical bloquants)
+        run: npm audit --audit-level=high
       - run: npm run lint
       - run: npm test
       - run: npm run build
