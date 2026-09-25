@@ -17,7 +17,7 @@
 drop policy if exists "Anyone can view answers" on public.answers;
 
 create policy "Admins can view answers" on public.answers
-  for select using (public.is_admin(auth.uid()));
+  for select to authenticated using (public.is_admin(auth.uid()));
 
 -- ===========================================================================
 -- 2. Tentatives de quiz : insertion uniquement par submit_quiz_attempt()
@@ -25,7 +25,7 @@ create policy "Admins can view answers" on public.answers
 drop policy if exists "Users can insert own attempts" on public.quiz_attempts;
 
 create policy "Admins can view all attempts" on public.quiz_attempts
-  for select using (public.is_admin(auth.uid()));
+  for select to authenticated using (public.is_admin(auth.uid()));
 create policy "Interdit : insertion directe de tentative" on public.quiz_attempts
   as restrictive for insert with check (false);
 create policy "Interdit : modification de tentative" on public.quiz_attempts
@@ -55,12 +55,12 @@ revoke execute on function public.is_badge_owner(uuid, uuid) from public, anon;
 grant execute on function public.is_badge_owner(uuid, uuid) to authenticated;
 
 create policy "Instructors can create badges" on public.badges
-  for insert with check (public.is_badge_owner(quiz_id, course_id));
+  for insert to authenticated with check (public.is_badge_owner(quiz_id, course_id));
 create policy "Instructors can update own badges" on public.badges
-  for update using (public.is_badge_owner(quiz_id, course_id))
+  for update to authenticated using (public.is_badge_owner(quiz_id, course_id))
   with check (public.is_badge_owner(quiz_id, course_id));
 create policy "Instructors can delete own badges" on public.badges
-  for delete using (public.is_badge_owner(quiz_id, course_id));
+  for delete to authenticated using (public.is_badge_owner(quiz_id, course_id));
 
 -- ===========================================================================
 -- 4. Badges obtenus : attribution uniquement par le serveur
@@ -68,7 +68,7 @@ create policy "Instructors can delete own badges" on public.badges
 drop policy if exists "Users can award own badges" on public.user_badges;
 
 create policy "Admins can view all earned badges" on public.user_badges
-  for select using (public.is_admin(auth.uid()));
+  for select to authenticated using (public.is_admin(auth.uid()));
 create policy "Interdit : attribution directe de badge" on public.user_badges
   as restrictive for insert with check (false);
 create policy "Interdit : modification de badge obtenu" on public.user_badges
@@ -82,13 +82,13 @@ create policy "Interdit : suppression de badge obtenu" on public.user_badges
 drop policy if exists "Users can insert own certificates" on public.certificates;
 
 create policy "Admins can view all certificates" on public.certificates
-  for select using (public.is_admin(auth.uid()));
+  for select to authenticated using (public.is_admin(auth.uid()));
 create policy "Interdit : émission directe de certificat" on public.certificates
   as restrictive for insert with check (false);
 create policy "Interdit : modification de certificat" on public.certificates
   as restrictive for update using (false);
 create policy "Admins can delete certificates" on public.certificates
-  for delete using (public.is_admin(auth.uid()));
+  for delete to authenticated using (public.is_admin(auth.uid()));
 
 -- ===========================================================================
 -- 6. Inscriptions : l'état et la progression sont calculés par le serveur
@@ -111,11 +111,11 @@ create policy "Instructors can view enrollments of their courses" on public.cour
      where c.id = course_enrollments.course_id and c.instructor_id = auth.uid()
   ));
 create policy "Admins can view all enrollments" on public.course_enrollments
-  for select using (public.is_admin(auth.uid()));
+  for select to authenticated using (public.is_admin(auth.uid()));
 create policy "Interdit : modification directe d'inscription" on public.course_enrollments
   as restrictive for update using (false);
 create policy "Admins can delete enrollments" on public.course_enrollments
-  for delete using (public.is_admin(auth.uid()));
+  for delete to authenticated using (public.is_admin(auth.uid()));
 
 -- ===========================================================================
 -- 7. Progression des leçons
@@ -186,7 +186,7 @@ create policy "Interdit : suppression de rôle" on public.roles
   as restrictive for delete using (false);
 
 create policy "Admins can view all courses" on public.courses
-  for select using (public.is_admin(auth.uid()));
+  for select to authenticated using (public.is_admin(auth.uid()));
 
 -- ===========================================================================
 -- 10. Blocs de contenu

@@ -17,7 +17,7 @@ grant execute on function public.has_role(public.user_role[]) to authenticated;
 
 drop policy if exists "Instructors can create courses" on public.courses;
 create policy "Instructors can create courses" on public.courses
-  for insert with check (
+  for insert to authenticated with check (
     auth.uid() = instructor_id
     and public.has_role(array['instructor', 'admin']::public.user_role[])
   );

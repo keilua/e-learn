@@ -4,7 +4,7 @@ begin;
 create extension if not exists pgtap with schema extensions;
 set search_path = public, extensions;
 
-select plan(24);
+select plan(26);
 
 -- ---------------------------------------------------------------------------
 -- Jeu de données
@@ -59,6 +59,20 @@ select is(
   null,
   'chaque table publique a une politique explicite pour SELECT, INSERT, UPDATE et DELETE'
 );
+
+-- ---------------------------------------------------------------------------
+-- Visiteur anonyme : le catalogue public reste lisible (non-régression : les
+-- politiques admin appellent is_admin(), non exécutable par anon)
+-- ---------------------------------------------------------------------------
+set local role anon;
+set local request.jwt.claims = '{"role":"anon"}';
+select is((select count(*)::int from public.courses where id in
+  ('10000000-0000-0000-0000-00000000000a', '10000000-0000-0000-0000-00000000000b')),
+  2, 'un visiteur anonyme lit le catalogue des cours publiés');
+select lives_ok($$select count(*) from public.modules; select count(*) from public.badges;
+  select count(*) from public.questions; select count(*) from public.users$$,
+  'un visiteur anonyme parcourt les tables publiques sans erreur de droits');
+reset role;
 
 -- ---------------------------------------------------------------------------
 -- Apprenant 1 (inscrit au cours A)
