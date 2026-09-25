@@ -13,6 +13,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
+import { sanitizeHtml, safeMediaUrl } from '@/lib/sanitize';
 
 const CreateLesson = () => {
   const { moduleId } = useParams();
@@ -134,9 +135,11 @@ const CreateLesson = () => {
         type: contentType,
         is_published: formData.is_published,
         duration_minutes: parseInt(formData.duration_minutes) || 0,
-        content: (contentType === 'text' || contentType === 'code') ? formData.content : null,
-        video_url: contentType === 'video' ? formData.video_url : null,
-        resource_url: contentType === 'pdf' ? formData.resource_url : null,
+        // SEC-003 : HTML de l'éditeur assaini avant enregistrement ; le code reste du texte brut.
+        content: contentType === 'text' ? sanitizeHtml(formData.content)
+          : contentType === 'code' ? formData.content : null,
+        video_url: contentType === 'video' ? (safeMediaUrl(formData.video_url) || null) : null,
+        resource_url: contentType === 'pdf' ? (safeMediaUrl(formData.resource_url) || null) : null,
         code_language: contentType === 'code' ? formData.code_language : null
       };
 

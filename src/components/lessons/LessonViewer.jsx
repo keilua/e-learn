@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import DOMPurify from 'dompurify';
+import { sanitizeHtml, safeMediaUrl, toVideoEmbedUrl } from '@/lib/sanitize';
 import { FileText, Download, PlayCircle, Code, Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Document, Page, pdfjs } from 'react-pdf';
@@ -48,6 +48,9 @@ const LessonViewer = ({ lesson }) => {
     setLoading(false);
   };
 
+  const videoUrl = safeMediaUrl(lesson.video_url);
+  const resourceUrl = safeMediaUrl(lesson.resource_url);
+
   // Video Renderer
   if (lesson.type === 'video' || (lesson.video_url && !lesson.type)) {
     const isYouTube = lesson.video_url?.includes('youtube.com') || lesson.video_url?.includes('youtu.be');
@@ -65,7 +68,7 @@ const LessonViewer = ({ lesson }) => {
                 console.error('Video load error:', e);
                 setVideoError(true);
               }}
-              src={lesson.video_url}
+              src={videoUrl || undefined}
             >
               Your browser does not support the video tag.
             </video>
@@ -73,9 +76,9 @@ const LessonViewer = ({ lesson }) => {
             <div className="aspect-video flex flex-col items-center justify-center text-white p-8 bg-zinc-900">
               <AlertCircle className="h-16 w-16 mb-4 text-red-400" />
               <p className="text-lg mb-4">Unable to load video</p>
-              {lesson.video_url && (
+              {videoUrl && (
                 <Button variant="secondary" asChild>
-                  <a href={lesson.video_url} target="_blank" rel="noopener noreferrer" download>
+                  <a href={videoUrl} target="_blank" rel="noopener noreferrer" download>
                     <Download className="mr-2 h-4 w-4" /> Download Video
                   </a>
                 </Button>
@@ -86,11 +89,13 @@ const LessonViewer = ({ lesson }) => {
       );
     }
 
+    const embedUrl = toVideoEmbedUrl(lesson.video_url);
+
     return (
       <div className="aspect-video w-full bg-black flex items-center justify-center rounded-lg overflow-hidden shadow-lg">
-        {lesson.video_url ? (
+        {embedUrl ? (
           <iframe 
-            src={lesson.video_url.replace('watch?v=', 'embed/')} 
+            src={embedUrl} 
             title={lesson.title}
             className="w-full h-full"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -108,7 +113,7 @@ const LessonViewer = ({ lesson }) => {
 
   // Text Renderer
   if (lesson.type === 'text' || (!lesson.type && lesson.content)) {
-    const safeContent = DOMPurify.sanitize(lesson.content || '');
+    const safeContent = sanitizeHtml(lesson.content);
     return (
       <div className="p-6 md:p-10 prose prose-slate dark:prose-invert max-w-none bg-card rounded-lg border shadow-sm">
         <div dangerouslySetInnerHTML={{ __html: safeContent }} />
@@ -120,7 +125,7 @@ const LessonViewer = ({ lesson }) => {
   if (lesson.type === 'pdf') {
     return (
       <div className="w-full space-y-4">
-        {lesson.resource_url ? (
+        {resourceUrl ? (
           <div className="flex flex-col items-center bg-slate-100 dark:bg-slate-900 p-6 rounded-lg border shadow-sm min-h-[500px]">
             {pdfError ? (
               <div className="flex flex-col items-center justify-center text-center p-8">
@@ -130,7 +135,7 @@ const LessonViewer = ({ lesson }) => {
                   {pdfError.message || "There was an error loading the document. It might be restricted or deleted."}
                 </p>
                 <Button variant="outline" asChild>
-                  <a href={lesson.resource_url} target="_blank" rel="noopener noreferrer" download>
+                  <a href={resourceUrl} target="_blank" rel="noopener noreferrer" download>
                     <Download className="mr-2 h-4 w-4" /> Download PDF Directly
                   </a>
                 </Button>
@@ -138,7 +143,7 @@ const LessonViewer = ({ lesson }) => {
             ) : (
               <>
                 <Document
-                  file={lesson.resource_url}
+                  file={resourceUrl}
                   onLoadSuccess={onDocumentLoadSuccess}
                   onLoadError={onDocumentLoadError}
                   loading={
@@ -187,7 +192,7 @@ const LessonViewer = ({ lesson }) => {
                     </Button>
                     <div className="w-px h-4 bg-border mx-2" />
                      <Button variant="ghost" size="sm" asChild>
-                      <a href={lesson.resource_url} target="_blank" rel="noopener noreferrer" download>
+                      <a href={resourceUrl} target="_blank" rel="noopener noreferrer" download>
                         <Download className="h-4 w-4" />
                         <span className="sr-only">Download</span>
                       </a>
