@@ -1,7 +1,7 @@
 import React, { createContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/lib/customSupabaseClient';
 import { useToast } from '@/components/ui/use-toast';
-import { loginErrorMessage, registerErrorMessage } from '@/lib/authErrors';
+import { loginErrorMessage, registerErrorMessage, authFailureReason, NETWORK_ERROR_MESSAGE } from '@/lib/authErrors';
 
 export const AuthContext = createContext(undefined);
 
@@ -141,6 +141,14 @@ export const AuthProvider = ({ children }) => {
       console.error("Login error:", error);
       // SEC-005 : message identique que le compte existe ou non.
       const errorMessage = loginErrorMessage(error);
+
+      // SEC-012 : journalisation serveur de l'échec (email haché côté base, jamais
+      // le mot de passe). Sans effet bloquant ; ignoré si la requête n'a pas abouti.
+      if (errorMessage !== NETWORK_ERROR_MESSAGE) {
+        supabase
+          .rpc('log_auth_failure', { p_email: email, p_reason: authFailureReason(error) })
+          .then(({ error: logError }) => logError && console.error('Auth failure log error:', logError));
+      }
 
       toast({
         variant: "destructive",

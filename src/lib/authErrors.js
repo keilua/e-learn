@@ -21,3 +21,17 @@ export const registerErrorMessage = (error) => {
   if (error?.code === 'weak_password' || /^password/i.test(error?.message || '')) return error.message;
   return REGISTER_FAILED_MESSAGE;
 };
+
+/**
+ * Motif normalisé d'un échec de connexion, pour le journal serveur (SEC-012).
+ * supabase-js 2.30 ne renseigne pas error.code : on se replie sur le message.
+ */
+export const authFailureReason = (error) => {
+  const known = ['invalid_credentials', 'email_not_confirmed', 'user_banned'];
+  if (known.includes(error?.code)) return error.code;
+  const message = (error?.message || '').toLowerCase();
+  if (message.includes('invalid login credentials')) return 'invalid_credentials';
+  if (message.includes('email not confirmed')) return 'email_not_confirmed';
+  if (message.includes('banned')) return 'user_banned';
+  return 'other';
+};
