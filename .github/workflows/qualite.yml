@@ -40,3 +40,16 @@ jobs:
       - run: npm run lint
       - run: npm test
       - run: npm run build
+
+  rls:
+    name: Tests base de données (RLS, fonctions, stockage)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 2.108.0
+      - name: Démarrer Supabase (migrations appliquées depuis zéro)
+        run: supabase start -x studio,imgproxy,edge-runtime,logflare,vector,mailpit,realtime,postgres-meta,supavisor
+      - name: Tests pgTAP
+        run: supabase test db
