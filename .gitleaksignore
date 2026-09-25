@@ -1,0 +1,5 @@
+# Clé "anon" Supabase committée dans le premier commit (94d42c5), retirée du code
+# depuis (SEC-010). Rôle "anon" : publique par conception, protégée par la RLS.
+# Purge d'historique et rotation : docs/securite/SEC-010-purge-rotation.md
+# Supprimer cette ligne une fois l'historique purgé.
+94d42c578cf35a6934d55997732f343e813e57a7:src/lib/customSupabaseClient.js:jwt:4

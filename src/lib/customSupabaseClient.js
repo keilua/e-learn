@@ -1,7 +1,16 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = 'https://npregmaiklksxrixxblt.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5wcmVnbWFpa2xrc3hyaXh4Ymx0Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjczOTM0NzYsImV4cCI6MjA4Mjk2OTQ3Nn0.fhPJ8SQUlNz5XlzC81Vd88sRlN9XcJXfoXV1HNjxjfI';
+// Valeurs fournies par l'environnement (.env.local en local, variables du build en CI).
+// Voir .env.example. La clé "anon" est publique par conception : la sécurité des
+// données repose sur les politiques RLS, jamais sur le secret de cette clé.
+const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
+const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseAnonKey) {
+    throw new Error(
+        'Configuration Supabase manquante : définissez VITE_SUPABASE_URL et VITE_SUPABASE_ANON_KEY (voir .env.example).'
+    );
+}
 
 const customSupabaseClient = createClient(supabaseUrl, supabaseAnonKey);
 
