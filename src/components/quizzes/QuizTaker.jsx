@@ -19,10 +19,14 @@ import {
 const QuizTaker = ({ quiz, questions, onSubmit }) => {
   const { toast } = useToast();
   const [answers, setAnswers] = useState({});
-  const [timeLeft, setTimeLeft] = useState(quiz.time_limit_minutes * 60);
+  // Quiz sans limite de temps : pas de minuterie (null * 60 valait 0 et déclenchait
+  // une soumission automatique, à vide, dès l'ouverture du quiz).
+  const hasTimeLimit = quiz.time_limit_minutes > 0;
+  const [timeLeft, setTimeLeft] = useState(hasTimeLimit ? quiz.time_limit_minutes * 60 : null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
+    if (!hasTimeLimit) return;
     if (timeLeft <= 0) {
       handleTimeUp();
       return;
@@ -63,20 +67,24 @@ const QuizTaker = ({ quiz, questions, onSubmit }) => {
     return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const progress = ((quiz.time_limit_minutes * 60 - timeLeft) / (quiz.time_limit_minutes * 60)) * 100;
-  const isLowTime = timeLeft < 60; // Less than 1 minute
+  const progress = hasTimeLimit ? ((quiz.time_limit_minutes * 60 - timeLeft) / (quiz.time_limit_minutes * 60)) * 100 : 0;
+  const isLowTime = hasTimeLimit && timeLeft < 60; // Less than 1 minute
 
   return (
     <div className="space-y-8">
       <div className="sticky top-20 z-10 bg-background/95 backdrop-blur py-4 border-b">
         <div className="flex justify-between items-center mb-2">
           <h2 className="text-xl font-bold">{quiz.title}</h2>
-          <div className={`flex items-center gap-2 font-mono text-xl font-bold ${isLowTime ? 'text-destructive animate-pulse' : 'text-primary'}`}>
-            <Clock className="h-5 w-5" />
-            {formatTime(timeLeft)}
-          </div>
+          {hasTimeLimit && (
+            <div className={`flex items-center gap-2 font-mono text-xl font-bold ${isLowTime ? 'text-destructive animate-pulse' : 'text-primary'}`}>
+              <Clock className="h-5 w-5" />
+              {formatTime(timeLeft)}
+            </div>
+          )}
         </div>
-        <Progress value={100 - progress} className={`h-2 ${isLowTime ? 'bg-destructive/20' : ''}`} />
+        {hasTimeLimit && (
+          <Progress value={100 - progress} className={`h-2 ${isLowTime ? 'bg-destructive/20' : ''}`} />
+        )}
       </div>
 
       <div className="space-y-6">
