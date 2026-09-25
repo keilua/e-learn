@@ -13,8 +13,10 @@ declare
 begin
   select id into v_instructor_id from public.users where email = 'keilua.richard@gmail.com';
 
+  -- Base vierge (supabase db reset en local / CI) : pas de formateur, pas de seed.
   if v_instructor_id is null then
-    raise exception 'No user found with email keilua.richard@gmail.com';
+    raise notice 'No user found with email keilua.richard@gmail.com, seed skipped';
+    return;
   end if;
 
   update public.users
