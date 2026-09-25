@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { sanitizeHtml, safeMediaUrl, toVideoEmbedUrl } from '@/lib/sanitize';
+import { useSignedUrl, openStoredFile } from '@/lib/storage';
 import { FileText, Download, PlayCircle, Code, Loader2, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Document, Page, pdfjs } from 'react-pdf';
@@ -13,12 +14,19 @@ pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   import.meta.url
 ).toString();
 
+// Document téléchargé en une fois : l'URL signée ne vaut que 60 s (SEC-004), des
+// requêtes partielles ultérieures échoueraient.
+const PDF_OPTIONS = { disableRange: true, disableStream: true };
+
 const LessonViewer = ({ lesson }) => {
   const [numPages, setNumPages] = useState(null);
   const [pageNumber, setPageNumber] = useState(1);
   const [pdfError, setPdfError] = useState(null);
   const [videoError, setVideoError] = useState(false);
   const [loading, setLoading] = useState(true);
+  // SEC-004 : fichiers du stockage servis par URL signée (URL externes inchangées).
+  const videoUrl = useSignedUrl(safeMediaUrl(lesson?.video_url));
+  const pdfUrl = useSignedUrl(safeMediaUrl(lesson?.resource_url));
 
   // Debug logging for PDF
   useEffect(() => {
@@ -48,7 +56,6 @@ const LessonViewer = ({ lesson }) => {
     setLoading(false);
   };
 
-  const videoUrl = safeMediaUrl(lesson.video_url);
   const resourceUrl = safeMediaUrl(lesson.resource_url);
 
   // Video Renderer
@@ -77,10 +84,8 @@ const LessonViewer = ({ lesson }) => {
               <AlertCircle className="h-16 w-16 mb-4 text-red-400" />
               <p className="text-lg mb-4">Unable to load video</p>
               {videoUrl && (
-                <Button variant="secondary" asChild>
-                  <a href={videoUrl} target="_blank" rel="noopener noreferrer" download>
-                    <Download className="mr-2 h-4 w-4" /> Download Video
-                  </a>
+                <Button variant="secondary" onClick={() => openStoredFile(safeMediaUrl(lesson.video_url))}>
+                  <Download className="mr-2 h-4 w-4" /> Download Video
                 </Button>
               )}
             </div>
@@ -127,23 +132,27 @@ const LessonViewer = ({ lesson }) => {
       <div className="w-full space-y-4">
         {resourceUrl ? (
           <div className="flex flex-col items-center bg-slate-100 dark:bg-slate-900 p-6 rounded-lg border shadow-sm min-h-[500px]">
-            {pdfError ? (
+            {pdfError || pdfUrl === '' ? (
               <div className="flex flex-col items-center justify-center text-center p-8">
                 <AlertCircle className="h-12 w-12 text-destructive mb-4" />
                 <h3 className="text-lg font-semibold mb-2">Failed to load PDF</h3>
                 <p className="text-muted-foreground mb-4 max-w-md">
-                  {pdfError.message || "There was an error loading the document. It might be restricted or deleted."}
+                  {pdfError?.message || "There was an error loading the document. It might be restricted or deleted."}
                 </p>
-                <Button variant="outline" asChild>
-                  <a href={resourceUrl} target="_blank" rel="noopener noreferrer" download>
-                    <Download className="mr-2 h-4 w-4" /> Download PDF Directly
-                  </a>
+                <Button variant="outline" onClick={() => openStoredFile(resourceUrl)}>
+                  <Download className="mr-2 h-4 w-4" /> Download PDF Directly
                 </Button>
+              </div>
+            ) : pdfUrl === null ? (
+              <div className="flex flex-col items-center justify-center p-12">
+                <Loader2 className="h-8 w-8 animate-spin text-primary mb-2" />
+                <p className="text-sm text-muted-foreground">Loading document...</p>
               </div>
             ) : (
               <>
                 <Document
-                  file={resourceUrl}
+                  file={pdfUrl}
+                  options={PDF_OPTIONS}
                   onLoadSuccess={onDocumentLoadSuccess}
                   onLoadError={onDocumentLoadError}
                   loading={
@@ -191,11 +200,9 @@ const LessonViewer = ({ lesson }) => {
                       Next
                     </Button>
                     <div className="w-px h-4 bg-border mx-2" />
-                     <Button variant="ghost" size="sm" asChild>
-                      <a href={resourceUrl} target="_blank" rel="noopener noreferrer" download>
-                        <Download className="h-4 w-4" />
-                        <span className="sr-only">Download</span>
-                      </a>
+                     <Button variant="ghost" size="sm" onClick={() => openStoredFile(resourceUrl)}>
+                      <Download className="h-4 w-4" />
+                      <span className="sr-only">Download</span>
                     </Button>
                   </div>
                 )}

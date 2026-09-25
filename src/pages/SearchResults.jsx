@@ -9,6 +9,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import { BookOpen, User, MessageSquare, ArrowRight, Clock } from 'lucide-react';
+import StoredImage from '@/components/StoredImage';
 
 const SearchResults = () => {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -213,7 +214,7 @@ const ResultCard = ({ type, data }) => {
       return (
          <Card className="flex items-center p-4 gap-4 hover:shadow-md transition-shadow">
             <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold overflow-hidden shrink-0">
-               {data.avatar_url ? <img src={data.avatar_url} alt={data.full_name} className="h-full w-full object-cover" /> : <User className="h-6 w-6" />}
+               {data.avatar_url ? <StoredImage src={data.avatar_url} alt={data.full_name} className="h-full w-full object-cover" /> : <User className="h-6 w-6" />}
             </div>
             <div className="overflow-hidden">
                <h3 className="font-medium truncate">{data.full_name}</h3>

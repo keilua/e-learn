@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { Helmet } from 'react-helmet';
 import { supabase } from '@/lib/customSupabaseClient';
+import StoredImage from '@/components/StoredImage';
 import EnrollButton from '@/components/courses/EnrollButton';
 import DonationButton from '@/components/donations/DonationButton';
 import { Button } from '@/components/ui/button';
@@ -182,7 +183,7 @@ const CourseDetail = () => {
                  <CardHeader className="flex flex-row items-center gap-4">
                     <div className="h-16 w-16 rounded-full bg-primary/10 flex items-center justify-center text-primary text-xl font-bold overflow-hidden">
                        {course.instructor?.avatar_url ? (
-                         <img src={course.instructor.avatar_url} alt={course.instructor.full_name} className="h-full w-full object-cover" />
+                         <StoredImage src={course.instructor.avatar_url} alt={course.instructor.full_name} className="h-full w-full object-cover" />
                        ) : (
                          course.instructor?.full_name?.charAt(0) || 'I'
                        )}
