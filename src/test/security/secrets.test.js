@@ -1,10 +1,12 @@
+import { describe, it, expect } from 'vitest';
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 // SEC-010 : aucune clé ni jeton ne doit être écrit en dur dans le code source.
 // Les valeurs viennent des variables d'environnement (voir .env.example).
 
-const SRC_DIR = path.resolve(__dirname, '../..');
+const SRC_DIR = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 const JWT = /eyJ[A-Za-z0-9_-]{10,}\.eyJ[A-Za-z0-9_-]{10,}\.[A-Za-z0-9_-]{10,}/;
 const SUPABASE_PROJECT_URL = /https:\/\/[a-z0-9]{20}\.supabase\.co/;
 
