@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/lib/customSupabaseClient';
 import { useToast } from '@/components/ui/use-toast';
+import { loginErrorMessage, registerErrorMessage } from '@/lib/authErrors';
 
 export const AuthContext = createContext(undefined);
 
@@ -138,15 +139,8 @@ export const AuthProvider = ({ children }) => {
       return { data, error: null };
     } catch (error) {
       console.error("Login error:", error);
-      let errorMessage = "Could not sign in.";
-      
-      if (error.message === "Invalid login credentials") {
-        errorMessage = "Invalid email or password. Please check your credentials.";
-      } else if (error.message.includes("Failed to fetch")) {
-        errorMessage = "Network error. Please check your internet connection.";
-      } else {
-        errorMessage = error.message;
-      }
+      // SEC-005 : message identique que le compte existe ou non.
+      const errorMessage = loginErrorMessage(error);
 
       toast({
         variant: "destructive",
@@ -190,10 +184,7 @@ export const AuthProvider = ({ children }) => {
 
       return { data, error: null };
     } catch (error) {
-      let errorMessage = error.message || "Could not create account.";
-      if (errorMessage.includes("Failed to fetch")) {
-        errorMessage = "Network error. Please check your internet connection.";
-      }
+      const errorMessage = registerErrorMessage(error);
 
       toast({
         variant: "destructive",
