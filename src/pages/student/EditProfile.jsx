@@ -21,6 +21,7 @@ import {
 } from '@/components/ui/alert-dialog';
 import { Loader2, Upload, User, Save, ArrowLeft, Trash2 } from 'lucide-react';
 import { Helmet } from 'react-helmet';
+import { validateAvatarFile } from '@/lib/fileValidation';
 
 const EditProfile = () => {
   const { user, profile, refreshProfile, deleteAccount } = useAuth();
@@ -44,13 +45,21 @@ const EditProfile = () => {
     }
   }, [profile]);
 
-  const handleAvatarChange = (e) => {
+  const handleAvatarChange = async (e) => {
     if (!e.target.files || e.target.files.length === 0) {
       return;
     }
     const file = e.target.files[0];
-    setAvatarFile(file);
-    setAvatarPreview(URL.createObjectURL(file));
+    try {
+      // SEC-009 : type réel (signature binaire) et taille vérifiés avant tout envoi.
+      const detected = await validateAvatarFile(file);
+      setAvatarFile({ file, ...detected });
+      setAvatarPreview(URL.createObjectURL(file));
+    } catch (error) {
+      e.target.value = '';
+      setAvatarFile(null);
+      toast({ variant: "destructive", title: "Invalid image", description: error.message });
+    }
   };
 
   const uploadAvatar = async () => {
@@ -58,13 +67,13 @@ const EditProfile = () => {
 
     try {
       setUploading(true);
-      const fileExt = avatarFile.name.split('.').pop();
-      const fileName = `${user.id}-${Math.random()}.${fileExt}`;
+      // Extension et type issus de la signature du fichier, pas de son nom.
+      const fileName = `${user.id}-${crypto.randomUUID()}.${avatarFile.extension}`;
       const filePath = `${fileName}`;
 
       const { error: uploadError } = await supabase.storage
         .from('avatars')
-        .upload(filePath, avatarFile);
+        .upload(filePath, avatarFile.file, { contentType: avatarFile.mimeType });
 
       if (uploadError) {
         throw uploadError;

@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/customSupabaseClient';
+import { validatePdfFile, validateVideoFile } from '@/lib/fileValidation';
 
 const MAX_FILE_SIZE = 100 * 1024 * 1024; // 100MB in bytes
 
@@ -15,44 +16,11 @@ const retryOperation = async (operation, maxRetries = 3, delay = 1000) => {
 };
 
 /**
- * Validates file size
- */
-const validateFileSize = (file, maxSize = MAX_FILE_SIZE) => {
-  if (file.size > maxSize) {
-    const maxSizeMB = maxSize / (1024 * 1024);
-    throw new Error(`File size exceeds ${maxSizeMB}MB limit. Please choose a smaller file.`);
-  }
-};
-
-/**
- * Validates PDF file type
- */
-const validatePDFFile = (file) => {
-  const validTypes = ['application/pdf'];
-  if (!validTypes.includes(file.type)) {
-    throw new Error('Invalid file type. Please upload a PDF file.');
-  }
-  validateFileSize(file);
-};
-
-/**
- * Validates video file type
- */
-const validateVideoFile = (file) => {
-  const validTypes = ['video/mp4', 'video/webm', 'video/quicktime', 'video/x-msvideo'];
-  if (!validTypes.includes(file.type)) {
-    throw new Error('Invalid file type. Please upload MP4, WebM, or MOV video files.');
-  }
-  validateFileSize(file);
-};
-
-/**
  * Generates a unique filename with timestamp
  */
-const generateUniqueFileName = (originalName) => {
+const generateUniqueFileName = (originalName, extension) => {
   const timestamp = Date.now();
   const randomString = Math.random().toString(36).substring(2, 8);
-  const extension = originalName.split('.').pop();
   const nameWithoutExt = originalName.replace(/\.[^/.]+$/, '').replace(/[^a-zA-Z0-9]/g, '_');
   return `${nameWithoutExt}_${timestamp}_${randomString}.${extension}`;
 };
@@ -65,11 +33,11 @@ const generateUniqueFileName = (originalName) => {
  */
 export const uploadPDF = async (file, lessonId = null) => {
   try {
-    // Validate file
-    validatePDFFile(file);
+    // SEC-009 : type réel (signature binaire) et taille
+    const { mimeType, extension } = await validatePdfFile(file, MAX_FILE_SIZE);
 
-    // Generate unique filename
-    const fileName = generateUniqueFileName(file.name);
+    // Generate unique filename (extension issue du type détecté)
+    const fileName = generateUniqueFileName(file.name, extension);
     const filePath = lessonId ? `lessons/${lessonId}/${fileName}` : fileName;
 
     // Upload to Supabase Storage with retry
@@ -78,6 +46,7 @@ export const uploadPDF = async (file, lessonId = null) => {
         .from('lesson-pdfs')
         .upload(filePath, file, {
           cacheControl: '3600',
+          contentType: mimeType,
           upsert: false
         })
     );
@@ -107,11 +76,11 @@ export const uploadPDF = async (file, lessonId = null) => {
  */
 export const uploadVideo = async (file, lessonId = null) => {
   try {
-    // Validate file
-    validateVideoFile(file);
+    // SEC-009 : type réel (signature binaire) et taille
+    const { mimeType, extension } = await validateVideoFile(file, MAX_FILE_SIZE);
 
-    // Generate unique filename
-    const fileName = generateUniqueFileName(file.name);
+    // Generate unique filename (extension issue du type détecté)
+    const fileName = generateUniqueFileName(file.name, extension);
     const filePath = lessonId ? `lessons/${lessonId}/${fileName}` : fileName;
 
     // Upload to Supabase Storage with retry
@@ -120,6 +89,7 @@ export const uploadVideo = async (file, lessonId = null) => {
         .from('lesson-videos')
         .upload(filePath, file, {
           cacheControl: '3600',
+          contentType: mimeType,
           upsert: false
         })
     );
