@@ -6,16 +6,7 @@
 		<meta name="generator" content="Crow Educ" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<title>Crow Educ</title>
-		<script>
-			// Apply the saved theme before paint to avoid a light/dark flash.
-			// Light is the default when nothing is stored yet.
-			try {
-				if (localStorage.getItem('e-learn-theme') === 'dark') {
-					document.documentElement.classList.add('dark');
-					document.documentElement.style.colorScheme = 'dark';
-				}
-			} catch (e) {}
-		</script>
+		<script src="/theme-init.js"></script>
 	</head>
 	<body>
 		<div id="root"></div>

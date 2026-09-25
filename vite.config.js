@@ -282,7 +282,10 @@ export default defineConfig({
 	plugins: [
 		...(isDev ? [inlineEditPlugin(), editModeDevPlugin(), iframeRouteRestorationPlugin(), selectionModePlugin()] : []),
 		react(),
-		addTransformIndexHtml
+		// Scripts de l'éditeur visuel (remontée d'erreurs vers l'iframe parente) : dev
+		// uniquement. En production ils étaient injectés en ligne, incompatibles avec la
+		// CSP (SEC-001), et relayaient erreurs et URL vers window.parent avec l'origine '*'.
+		...(isDev ? [addTransformIndexHtml] : []),
 	],
 	server: {
 		cors: true,

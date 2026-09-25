@@ -7,7 +7,24 @@
 </IfModule>
 
 <IfModule mod_headers.c>
-  Header set X-Powered-By "Crow Educ"
+  # --- SEC-001 : Content-Security-Policy -------------------------------------
+  # script-src 'self'        : aucun script en ligne ni tiers ; 'wasm-unsafe-eval'
+  #                            permet aux décodeurs WebAssembly de pdf.js de s'exécuter.
+  # style-src 'unsafe-inline': styles en ligne posés par React/Radix/Quill (pas de script).
+  # img-src https:           : miniatures et badges hébergés sur des domaines tiers.
+  # connect-src / media-src  : API, temps réel et stockage Supabase.
+  # frame-src                : lecteurs vidéo intégrés (voir toVideoEmbedUrl).
+  Header always set Content-Security-Policy "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https://*.supabase.co wss://*.supabase.co; media-src 'self' blob: https://*.supabase.co; worker-src 'self' blob:; frame-src https://www.youtube.com https://player.vimeo.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests"
+
+  # --- SEC-011 : en-têtes de sécurité ----------------------------------------
+  Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+  Header always set X-Frame-Options "DENY"
+  Header always set X-Content-Type-Options "nosniff"
+  Header always set Referrer-Policy "strict-origin-when-cross-origin"
+  Header always set Permissions-Policy "camera=(), microphone=(), geolocation=(), payment=(), usb=(), magnetometer=(), gyroscope=(), accelerometer=()"
+  Header always set Cross-Origin-Opener-Policy "same-origin"
+  Header always unset X-Powered-By
+  Header unset X-Powered-By
 
   # Cache everything on CDN by default
   Header set Cache-Control "public, s-maxage=604800, max-age=0"
